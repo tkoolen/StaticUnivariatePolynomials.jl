@@ -30,7 +30,9 @@ for op in [:+, :-]
         function Base.$op(p1::Polynomial{N}, p2::Polynomial{N}) where N
             c1 = p1.coeffs
             c2 = p2.coeffs
-            Polynomial(ntuple(i -> $op(c1[i], c2[i]), Val(N)))
+            ntuple(Val(N)) do i
+                $op(c1[i], c2[i])
+            end |> Polynomial
         end
         function Base.$op(p1::Polynomial{N}, p2::Polynomial{M}) where {N, M}
             P = max(N, M)
@@ -40,8 +42,10 @@ for op in [:+, :-]
 end
 
 derivative(p::Polynomial{1}) = Polynomial(zero(p.coeffs[1]))
-# @generated function derivative(p::Polynomial{N}) where N
-
-# end
+function derivative(p::Polynomial{N}) where N
+    ntuple(Val(N - 1)) do i
+        i * p.coeffs[i + 1]
+    end |> Polynomial
+end
 
 end # module
