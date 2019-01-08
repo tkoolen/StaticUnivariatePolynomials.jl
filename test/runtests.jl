@@ -35,6 +35,10 @@ end
     @test (p1 + p3)(7) == p1(7) + p3(7)
     allocs = @allocated p1 + p3
     @test allocs == 0
+    @test p1 + 1 === Polynomial(3, 3, 4)
+    @test 1 - p2 === Polynomial(-5, -7, -8)
+    @test +p1 === p1
+    @test -p1 === Polynomial(-2, -3, -4)
 end
 
 @testset "derivative" begin

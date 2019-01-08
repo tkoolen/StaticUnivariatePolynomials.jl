@@ -35,6 +35,7 @@ end
 # Arithmetic
 for op in [:+, :-]
     @eval begin
+        # Two Polynomials
         function Base.$op(p1::Polynomial{N}, p2::Polynomial{N}) where N
             c1 = p1.coeffs
             c2 = p2.coeffs
@@ -46,6 +47,13 @@ for op in [:+, :-]
             P = max(N, M)
             $op(Polynomial{P}(p1), Polynomial{P}(p2))
         end
+
+        # Polynomial and Number
+        Base.$op(p::Polynomial, c::Number) = Polynomial($op(constant(p), c), Base.tail(p.coeffs)...)
+        Base.$op(c::Number, p::Polynomial) = Polynomial($op(c, constant(p)), map($op, Base.tail(p.coeffs))...)
+
+        # Unary ops
+        Base.$op(p::Polynomial) = Polynomial(map($op, p.coeffs))
     end
 end
 
@@ -64,8 +72,5 @@ function integral(p::Polynomial{N}, c) where N
     T = eltype(tail)
     Polynomial((T(c), tail...))
 end
-
-
-
 
 end # module
