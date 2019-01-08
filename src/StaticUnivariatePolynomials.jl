@@ -12,8 +12,16 @@ Polynomial(coeffs...) = Polynomial(coeffs)
 
 @inline function Polynomial{N}(p::Polynomial{M, T}) where {N, M, T}
     N < M && throw(InexactError(:Polynomial, Polynomial{N}, p))
-    Polynomial((p.coeffs..., ntuple(_ -> zero(T), Val(N - M))...))
+    coeffs = (p.coeffs..., ntuple(_ -> zero(T), Val(N - M))...)
+    Polynomial(coeffs)
 end
+
+# Utility
+constant(p::Polynomial) = p.coeffs[1]
+Base.zero(::Type{Polynomial{N, T}}) where {N, T} = Polynomial(ntuple(_ -> zero(T), Val(N)))
+Base.zero(p::Polynomial) = zero(typeof(p))
+Base.conj(p::Polynomial) = Polynomial(map(conj, p.coeffs))
+Base.transpose(p::Polynomial) = p
 
 # Evaluation
 (p::Polynomial{1})(x::Number) = p.coeffs[1] # evalpoly doesn't handle N = 1 case
@@ -41,11 +49,23 @@ for op in [:+, :-]
     end
 end
 
+# Calculus
 derivative(p::Polynomial{1}) = Polynomial(zero(p.coeffs[1]))
 function derivative(p::Polynomial{N}) where N
     ntuple(Val(N - 1)) do i
         i * p.coeffs[i + 1]
     end |> Polynomial
 end
+
+function integral(p::Polynomial{N}, c) where N
+    tail = ntuple(Val(N)) do i
+        p.coeffs[i] / i
+    end
+    T = eltype(tail)
+    Polynomial((T(c), tail...))
+end
+
+
+
 
 end # module

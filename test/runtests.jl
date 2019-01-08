@@ -1,11 +1,20 @@
 using StaticUnivariatePolynomials
 using Test
 
-import StaticUnivariatePolynomials: derivative
+import StaticUnivariatePolynomials: constant, derivative, integral
 
 @testset "evaluation" begin
     @test Polynomial(1)(2) == 1
     @test Polynomial(2, 3, 4)(5) == 2 + 3 * 5 + 4 * 5^2
+end
+
+@testset "utility" begin
+    p = Polynomial(2, 3, 4)
+    @test constant(p) === 2
+    @test zero(p) === Polynomial(0, 0, 0)
+    @test transpose(p) === p
+    @test conj(p) === p
+    @test conj(Polynomial(1 + 2im, 3 + 4im, 5 - 6im)) === Polynomial(1 - 2im, 3 - 4im, 5 + 6im)
 end
 
 @testset "padding" begin
@@ -34,4 +43,20 @@ end
 
     p2 = Polynomial(1, 2, 3, 4)
     @test derivative(p2) === Polynomial(2, 2 * 3, 3 * 4)
+
+    p3 = Polynomial(ntuple(i -> 21 - i, Val(20)))
+    derivative(p3)
+    allocs = @allocated derivative(p3)
+    @test allocs == 0
+end
+
+@testset "integral" begin
+    p = Polynomial(ntuple(i -> 21 - i, Val(20)))
+    c = 5
+    P = integral(p, c)
+    @test constant(P) == c
+    P′ = derivative(P)
+    for x in 0 : 0.1 : 1
+        @test P′(x) ≈ p(x) atol=1e-14
+    end
 end
