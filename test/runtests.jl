@@ -3,6 +3,19 @@ using Test
 
 import StaticUnivariatePolynomials: constant, derivative, integral
 
+@testset "construction" begin
+    @test Polynomial{4}(Polynomial(1, 2)).coeffs === (1, 2, 0, 0)
+    @test Polynomial{4, Float64}(Polynomial(1, 2)).coeffs === (1.0, 2.0, 0.0, 0.0)
+
+    p = Polynomial(ntuple(i -> 21 - i, Val(10)))
+    Polynomial{20, Float64}(p)
+    allocs = @allocated Polynomial{20, Float64}(p)
+    @test allocs == 0
+
+    @test Polynomial{2}(Polynomial(1, 2, 0)).coeffs === (1, 2)
+    @test_throws InexactError Polynomial{2}(Polynomial(1, 2, 3))
+end
+
 @testset "evaluation" begin
     @test Polynomial(1)(2) == 1
     @test Polynomial(2, 3, 4)(5) == 2 + 3 * 5 + 4 * 5^2
@@ -73,4 +86,8 @@ end
     for x in 0 : 0.1 : 1
         @test P′(x) ≈ p(x) atol=1e-14
     end
+end
+
+@testset "arrays" begin
+    x = [Polynomial(2, 3, 4)]
 end

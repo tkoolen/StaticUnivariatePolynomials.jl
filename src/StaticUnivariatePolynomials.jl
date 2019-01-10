@@ -7,14 +7,29 @@ struct Polynomial{N, T}
     coeffs::NTuple{N, T}
 end
 
+# Construction
 Polynomial(coeffs::Tuple) = Polynomial(promote(coeffs...))
 Polynomial(coeffs...) = Polynomial(coeffs)
 
-@inline function Polynomial{N}(p::Polynomial{M, T}) where {N, M, T}
-    N < M && throw(InexactError(:Polynomial, Polynomial{N}, p))
-    coeffs = (p.coeffs..., ntuple(_ -> zero(T), Val(N - M))...)
-    Polynomial(coeffs)
+@inline function Polynomial{N, T}(p::Polynomial{M, S}) where {N, T, M, S}
+    if N < M
+        for i in N + 1 : M
+            iszero(p.coeffs[i]) || throw(InexactError(:Polynomial, Polynomial{N}, p))
+        end
+        coeffs = ntuple(Val(N)) do i
+            p.coeffs[i]
+        end
+        return Polynomial(coeffs)
+    else
+        coeffs = (
+            _map(x -> convert(T, x), p.coeffs)...,
+            ntuple(_ -> zero(T), Val(N - M))...
+        )
+        return Polynomial(coeffs)
+    end
 end
+
+Polynomial{N}(p::Polynomial{M, T}) where {N, M, T} = Polynomial{N, T}(p)
 
 # Utility
 constant(p::Polynomial) = p.coeffs[1]
@@ -59,19 +74,9 @@ end
 
 # Scaling
 for op in [:*, :/]
-    @eval begin
-        function Base.$op(p::Polynomial{N}, c::Number) where N
-            ntuple(Val(N)) do i
-                $op(p.coeffs[i], c)
-            end |> Polynomial
-        end
-    end
+    @eval Base.$op(p::Polynomial, c::Number) = Polynomial(_map(x -> $op(x, c), p.coeffs))
 end
-function Base.:*(c::Number, p::Polynomial{N}) where N
-    ntuple(Val(N)) do i
-        c * p.coeffs[i]
-    end |> Polynomial
-end
+Base.:*(c::Number, p::Polynomial) = Polynomial(_map(x -> c * x, p.coeffs))
 
 # Calculus
 derivative(p::Polynomial{1}) = Polynomial(zero(p.coeffs[1]))
@@ -87,6 +92,13 @@ function integral(p::Polynomial{N}, c) where N
     end
     T = eltype(tail)
     Polynomial((T(c), tail...))
+end
+
+# Utility
+@inline function _map(f::F, tup::Tuple{Vararg{Any, N}}) where {F, N}
+    ntuple(Val(N)) do i
+        f(tup[i])
+    end
 end
 
 end # module
