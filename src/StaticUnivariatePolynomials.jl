@@ -57,6 +57,22 @@ for op in [:+, :-]
     end
 end
 
+# Scaling
+for op in [:*, :/]
+    @eval begin
+        function Base.$op(p::Polynomial{N}, c::Number) where N
+            ntuple(Val(N)) do i
+                $op(p.coeffs[i], c)
+            end |> Polynomial
+        end
+    end
+end
+function Base.:*(c::Number, p::Polynomial{N}) where N
+    ntuple(Val(N)) do i
+        c * p.coeffs[i]
+    end |> Polynomial
+end
+
 # Calculus
 derivative(p::Polynomial{1}) = Polynomial(zero(p.coeffs[1]))
 function derivative(p::Polynomial{N}) where N

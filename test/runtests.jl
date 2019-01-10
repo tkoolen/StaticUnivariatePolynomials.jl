@@ -41,6 +41,16 @@ end
     @test -p1 === Polynomial(-2, -3, -4)
 end
 
+@testset "scaling" begin
+    p1 = Polynomial(2, 3, 4)
+    @test p1 * 4 === 4 * p1 === Polynomial(8, 12, 16)
+    @test p1 / 2 === Polynomial(2 / 2, 3 / 2, 4 / 2)
+    p2 = Polynomial(ntuple(i -> 21 - i, Val(20)))
+    p2 * 4
+    allocs = @allocated p2 * 4
+    @test allocs == 0
+end
+
 @testset "derivative" begin
     p1 = Polynomial(3)
     @test derivative(p1) === Polynomial(0)
