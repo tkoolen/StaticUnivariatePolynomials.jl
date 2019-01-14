@@ -1,7 +1,7 @@
 using StaticUnivariatePolynomials
 using Test
 
-import StaticUnivariatePolynomials: constant, derivative, integral
+import StaticUnivariatePolynomials: constant, derivative, integral, coefficient_gradient
 
 @testset "construction" begin
     @test Polynomial{4}(Polynomial(1, 2)).coeffs === (1, 2, 0, 0)
@@ -88,6 +88,14 @@ end
     end
 end
 
-@testset "arrays" begin
-    x = [Polynomial(2, 3, 4)]
+@testset "gradient w.r.t coefficients" begin
+    for x in [0, 1, 2]
+        @test coefficient_gradient(x, Val(5)) === (1, x, x^2, x^3, x^4)
+        @test coefficient_gradient(x, Val(5), Val(1)) === (0, 1, 2x, 3x^2, 4x^3)
+        @test coefficient_gradient(x, Val(5), Val(2)) === (0, 0, 2, 6x, 12x^2)
+
+        @test @allocated(coefficient_gradient(x, Val(5))) == 0
+        @test @allocated(coefficient_gradient(x, Val(5), Val(1))) == 0
+        @test @allocated(coefficient_gradient(x, Val(5), Val(2))) == 0
+    end
 end
