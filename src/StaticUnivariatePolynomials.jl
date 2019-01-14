@@ -54,9 +54,7 @@ for op in [:+, :-]
         function Base.$op(p1::Polynomial{N}, p2::Polynomial{N}) where N
             c1 = p1.coeffs
             c2 = p2.coeffs
-            ntuple(Val(N)) do i
-                $op(c1[i], c2[i])
-            end |> Polynomial
+            Polynomial(_map($op, c1, c2))
         end
         function Base.$op(p1::Polynomial{N}, p2::Polynomial{M}) where {N, M}
             P = max(N, M)
@@ -79,6 +77,13 @@ end
 Base.:*(c::Number, p::Polynomial) = Polynomial(_map(x -> c * x, p.coeffs))
 
 # Calculus
+"""
+    derivative(p::Polynomial)
+
+Return the derivative of ``p(x)`` with respect to ``x`` as a `Polynomial`.
+"""
+function derivative end
+
 derivative(p::Polynomial{1}) = Polynomial(zero(p.coeffs[1]))
 function derivative(p::Polynomial{N}) where N
     ntuple(Val(N - 1)) do i
@@ -86,6 +91,12 @@ function derivative(p::Polynomial{N}) where N
     end |> Polynomial
 end
 
+"""
+    integral(p::Polynomial, c)
+
+Return ``P(x)``, the integral of ``p(x)`` with respect to ``x`` such that ``P(0) = c``,
+as a `Polynomial`.
+"""
 function integral(p::Polynomial{N}, c) where N
     tail = ntuple(Val(N)) do i
         p.coeffs[i] / i
@@ -94,10 +105,36 @@ function integral(p::Polynomial{N}, c) where N
     Polynomial((T(c), tail...))
 end
 
+# Gradient w.r.t coefficients
+"""
+    coefficient_gradient(x, ::Val{n}, ::Val{m}) where {n, m}
+
+Return the gradient of the `m`th derivative of an `n`-coefficient polynomial, evaluated at `x`,
+with respect to the polynomial's coefficients, as a `Tuple`.
+"""
+function coefficient_gradient(x, ::Val{num_coeffs}, ::Val{deriv_order}=Val(0)) where {num_coeffs, deriv_order}
+    num_coeffs >= 0 || error()
+    deriv_order >= 0 || error()
+    first(_coefficient_gradient(x, Val(num_coeffs), Val(deriv_order)))
+end
+
+_coefficient_gradient(x, ::Val{0}, ::Val) = (), one(x)
+Base.@pure @inline function _coefficient_gradient(x, ::Val{num_coeffs}, ::Val{deriv_order}) where {num_coeffs, deriv_order}
+    previous, xpow = _coefficient_gradient(x, Val(num_coeffs - 1), Val(deriv_order))
+    multiplier = prod((num_coeffs - deriv_order) : num_coeffs - 1)
+    (previous..., multiplier * xpow), num_coeffs > deriv_order ? xpow * x : xpow
+end
+
 # Utility
-@inline function _map(f::F, tup::Tuple{Vararg{Any, N}}) where {F, N}
+@inline function _map(f::F, a::Tuple{Vararg{Any, N}}) where {F, N}
     ntuple(Val(N)) do i
-        f(tup[i])
+        f(a[i])
+    end
+end
+
+@inline function _map(f::F, a::Tuple{Vararg{Any, N}}, b::Tuple{Vararg{Any, N}}) where {F, N}
+    ntuple(Val(N)) do i
+        f(a[i], b[i])
     end
 end
 
