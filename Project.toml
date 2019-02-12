@@ -1,7 +1,7 @@
 name = "StaticUnivariatePolynomials"
-uuid = "acf665a8-1387-11e9-3699-7f83672d90f1"
+uuid = "6f584044-cad5-5b68-a429-1e244a824f76"
 authors = ["Twan Koolen <koolen.twan@gmail.com>"]
-version = "0.2.0"
+version = "0.3.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
