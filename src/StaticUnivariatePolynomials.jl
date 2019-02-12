@@ -70,6 +70,25 @@ for op in [:+, :-]
     end
 end
 
+@generated function Base.:*(p1::Polynomial{M}, p2::Polynomial{N}) where {M, N}
+    P = N + M - 1
+    exprs = Any[nothing for i = 1 : P]
+    for i in 1 : M
+        for j in 1 : N
+            k = i + j - 1
+            if exprs[k] === nothing
+                exprs[k] = :(p1.coeffs[$i] * p2.coeffs[$j])
+            else
+                exprs[k] = :(muladd(p1.coeffs[$i], p2.coeffs[$j], $(exprs[k])))
+            end
+        end
+    end
+    return quote
+        Base.@_inline_meta
+        Polynomial(tuple($(exprs...)))
+    end
+end
+
 # Scaling
 for op in [:*, :/]
     @eval Base.$op(p::Polynomial, c::Number) = Polynomial(_map(x -> $op(x, c), p.coeffs))

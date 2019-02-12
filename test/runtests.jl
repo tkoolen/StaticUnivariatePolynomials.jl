@@ -52,6 +52,10 @@ end
     @test 1 - p2 === Polynomial(-5, -7, -8)
     @test +p1 === p1
     @test -p1 === Polynomial(-2, -3, -4)
+    p4 = p1 * p3
+    @test (p1 * p3)(3) == p1(3) * p3(3)
+    allocs = @allocated p1 * p3
+    @test allocs == 0
 end
 
 @testset "scaling" begin
