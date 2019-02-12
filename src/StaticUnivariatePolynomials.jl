@@ -71,7 +71,7 @@ for op in [:+, :-]
 end
 
 @generated function Base.:*(p1::Polynomial{M}, p2::Polynomial{N}) where {M, N}
-    P = N + M - 1
+    P = M + N - 1
     exprs = Any[nothing for i = 1 : P]
     for i in 1 : M
         for j in 1 : N
@@ -89,7 +89,6 @@ end
     end
 end
 
-# Scaling
 for op in [:*, :/]
     @eval Base.$op(p::Polynomial, c::Number) = Polynomial(_map(x -> $op(x, c), p.coeffs))
 end

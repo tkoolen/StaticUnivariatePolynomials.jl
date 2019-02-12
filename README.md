@@ -32,7 +32,7 @@ julia> @btime $p(x) setup = x = rand()
   2.052 ns (0 allocations: 0 bytes)
 ```
 
-Basic arithmetic and scaling are implemented:
+Basic arithmetic is implemented:
 
 ```julia
 julia> p + 1
@@ -43,6 +43,9 @@ Polynomial{3,Int64}((4, 4, 4))
 
 julia> p / 4
 Polynomial{3,Float64}((0.25, 0.5, 0.75))
+
+julia> p * p
+Polynomial{5,Int64}((1, 4, 10, 12, 9))
 ```
 
 Calculus:
