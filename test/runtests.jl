@@ -1,7 +1,8 @@
 using StaticUnivariatePolynomials
 using Test
+using ForwardDiff
 
-import StaticUnivariatePolynomials: constant, derivative, integral, coefficient_gradient
+import StaticUnivariatePolynomials: constant, derivative, integral, coefficient_gradient, exponential_integral
 
 @testset "construction" begin
     @test Polynomial{4}(Polynomial(1, 2)).coeffs === (1, 2, 0, 0)
@@ -101,5 +102,13 @@ end
         @test @allocated(coefficient_gradient(x, Val(5))) == 0
         @test @allocated(coefficient_gradient(x, Val(5), Val(1))) == 0
         @test @allocated(coefficient_gradient(x, Val(5), Val(2))) == 0
+    end
+end
+
+@testset "exponential integral" begin
+    p = Polynomial(1, 2, 3, 4)
+    c = 5
+    for t in range(0., 1., length=10)
+        @test ForwardDiff.derivative(t -> exponential_integral(p, c, t), t) ≈ p(t) * exp(c * t) atol=1e-10
     end
 end
