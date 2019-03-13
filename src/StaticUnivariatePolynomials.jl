@@ -5,6 +5,8 @@ export
 
 abstract type AbstractPolynomial{N, T} end
 
+Base.broadcastable(p::AbstractPolynomial) = Ref(p)
+
 struct Polynomial{N, T} <: AbstractPolynomial{N, T}
     coeffs::NTuple{N, T}
 end

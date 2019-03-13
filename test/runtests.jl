@@ -112,3 +112,9 @@ end
         @test ForwardDiff.derivative(t -> exponential_integral(p, c, t), t) ≈ p(t) * exp(c * t) atol=1e-10
     end
 end
+
+@testset "broadcast" begin
+    p1 = Polynomial(1, 2)
+    p2 = Polynomial(3, 4)
+    @test [p1, p2] .+ 1 == [Polynomial(2, 2), Polynomial(4, 4)]
+end
