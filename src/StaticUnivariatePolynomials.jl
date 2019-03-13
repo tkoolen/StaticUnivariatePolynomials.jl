@@ -41,8 +41,8 @@ Base.conj(p::Polynomial) = Polynomial(map(conj, p.coeffs))
 Base.transpose(p::Polynomial) = p
 
 # Evaluation
-(p::Polynomial{1})(x::Number) = p.coeffs[1] # evalpoly doesn't handle N = 1 case
-@generated function (p::Polynomial{N})(x::Number) where N
+(p::Polynomial{1})(x) = p.coeffs[1] # evalpoly doesn't handle N = 1 case
+@generated function (p::Polynomial{N})(x) where N
     quote
         coeffs = p.coeffs
         @evalpoly(x, $((:(p.coeffs[$i]) for i = 1 : N)...))
