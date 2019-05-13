@@ -5,6 +5,7 @@ os:
   - osx
 julia:
   - 1.0
+  - 1.1
   - nightly
 matrix:
   allow_failures:
@@ -13,4 +14,4 @@ matrix:
 notifications:
   email: false
 after_success:
-  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+  - julia --project -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
